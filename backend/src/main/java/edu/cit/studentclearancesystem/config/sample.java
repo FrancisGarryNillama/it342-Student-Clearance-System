@@ -1,2 +1,4 @@
-package edu.cit.studentclearancesystem.config;public class sample {
+package edu.cit.studentclearancesystem.config;
+
+public class sample {
 }

@@ -1,2 +1,4 @@
-package edu.cit.studentclearancesystem.entity;public class sample {
+package edu.cit.studentclearancesystem.entity;
+
+public class sample {
 }
