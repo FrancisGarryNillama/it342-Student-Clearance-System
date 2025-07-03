@@ -37,7 +37,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .email(email)
                     .fullName(name)
                     .profileUrl(picture)
-                    .role(Role.valueOf("STUDENT")) // Default role
+                    .role(Role.STUDENT) // Default role
                     .build();
         } else {
             // Update profile if already exists
