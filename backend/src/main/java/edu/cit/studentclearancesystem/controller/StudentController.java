@@ -4,7 +4,7 @@ import edu.cit.studentclearancesystem.entity.ClearanceTask;
 import edu.cit.studentclearancesystem.entity.User;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
 import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
-import org.springframework.security.core.Authentication;  
+import org.springframework.security.core.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
