@@ -8,8 +8,8 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findByUserOrderByCreatedAtDesc(User user);
+    List<Notification> findByUserEmailOrderByCreatedAtDesc(String email);
 
-    // Optional: Count unseen notifications
-    long countByUserAndSeenFalse(User user);
+    long countByUserEmailAndSeenFalse(String email);
+
 }
