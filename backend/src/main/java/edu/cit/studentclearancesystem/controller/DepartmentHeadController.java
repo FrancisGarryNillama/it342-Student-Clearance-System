@@ -1,13 +1,10 @@
 package edu.cit.studentclearancesystem.controller;
 
-import edu.cit.studentclearancesystem.entity.ClearanceTask;
-import edu.cit.studentclearancesystem.entity.Comment;
-import edu.cit.studentclearancesystem.entity.TaskStatus;
-import edu.cit.studentclearancesystem.entity.User;
-import edu.cit.studentclearancesystem.entity.AuditLog;
+import edu.cit.studentclearancesystem.entity.*;
 import edu.cit.studentclearancesystem.repository.AuditLogRepository;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
 import edu.cit.studentclearancesystem.repository.CommentRepository;
+import edu.cit.studentclearancesystem.repository.NotificationRepository;
 import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
 import org.springframework.security.core.Authentication;  // Corrected import
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +26,17 @@ public class DepartmentHeadController {
     private final ClearanceTaskRepository clearanceTaskRepository;
     private final CommentRepository commentRepository;
     private final AuditLogRepository auditLogRepository;
+    private final NotificationRepository notificationRepository;
 
     @Autowired
     public DepartmentHeadController(ClearanceTaskRepository clearanceTaskRepository,
                                     CommentRepository commentRepository,
-                                    AuditLogRepository auditLogRepository) {
+                                    AuditLogRepository auditLogRepository,
+                                    NotificationRepository notificationRepository) {
         this.clearanceTaskRepository = clearanceTaskRepository;
         this.commentRepository = commentRepository;
         this.auditLogRepository = auditLogRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     @GetMapping("/dashboard")
@@ -50,7 +50,7 @@ public class DepartmentHeadController {
                                               @RequestParam(required = false) String comment,
                                               Authentication auth) {
 
-        User deptHead = ((CustomUserPrincipal) auth.getPrincipal()).getUser();  // Authentication principal
+        User deptHead = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
         ClearanceTask task = clearanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
@@ -59,7 +59,7 @@ public class DepartmentHeadController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized");
         }
 
-        // Validate and set the task status
+        // Parse task status
         TaskStatus taskStatus;
         try {
             taskStatus = TaskStatus.valueOf(status.toUpperCase());
@@ -67,29 +67,50 @@ public class DepartmentHeadController {
             return ResponseEntity.badRequest().body("Invalid task status.");
         }
 
+        // Update task
         task.setStatus(taskStatus);
         task.setUpdatedBy(deptHead);
         task.setUpdatedAt(LocalDateTime.now());
         clearanceTaskRepository.save(task);
 
+        // Create notification for student
+        Notification statusNotification = Notification.builder()
+                .user(task.getUser()) // Notify the student
+                .message("Your clearance task in " + task.getDepartment().getName() +
+                        " was " + taskStatus.name().toLowerCase())
+                .seen(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        notificationRepository.save(statusNotification);
+
         // Save comment if provided
         if (comment != null && !comment.isBlank()) {
-            Comment c = Comment.builder()  // Using Lombok's builder
+            Comment c = Comment.builder()
                     .task(task)
                     .sender(deptHead)
                     .message(comment)
                     .createdAt(LocalDateTime.now())
                     .build();
             commentRepository.save(c);
+
+            // Notification for comment
+            Notification commentNotification = Notification.builder()
+                    .user(task.getUser()) // Notify the student
+                    .message("You have a new comment on your task from " + deptHead.getFullName())
+                    .seen(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            notificationRepository.save(commentNotification);
         }
 
         // Save audit log
-        auditLogRepository.save(AuditLog.builder()  // Using Lombok's builder
+        AuditLog log = AuditLog.builder()
                 .user(deptHead)
                 .action("UPDATE_TASK_" + taskStatus.name())
                 .target("Task ID: " + taskId)
                 .timestamp(LocalDateTime.now())
-                .build());
+                .build();
+        auditLogRepository.save(log);
 
         return ResponseEntity.ok("Task status updated");
     }
