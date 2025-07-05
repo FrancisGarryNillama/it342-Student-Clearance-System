@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="013bcb75-94d6-489e-a6eb-0669bf24e38f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/public/images/login-graphic.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/CommentModal.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/DepartmentDashboard.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/DepartmentDashboard.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/LoginPage.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/LoginPage.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/OAuthRedirect.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/RegistrarDashboard.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/RegistrarDashboard.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/StudentDashboard.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/StudentDashboard.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/logo.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/reportWebVitals.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/setupTests.js" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2zOKwh9zY0k0miVSQ2nNgGJDBa0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "FuncionFront-End"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\student-clearance-system-frontend\public\images" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="013bcb75-94d6-489e-a6eb-0669bf24e38f" name="Changes" comment="" />
+      <created>1751596920201</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1751596920201</updated>
+    </task>
+    <servers />
+  </component>
+</project>
