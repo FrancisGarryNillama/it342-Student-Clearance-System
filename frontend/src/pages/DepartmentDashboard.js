@@ -8,7 +8,7 @@ function DepartmentDashboard() {
 
   useEffect(() => {
     setUser({
-      name: 'Megan Fox',
+      name: 'Test User',
       role: 'Admin',
       department: 'Computer Science',
     });
