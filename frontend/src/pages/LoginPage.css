@@ -1,0 +1,188 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  height: 100%;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.login-form-section {
+  flex: 1;
+  background-color: #f9f9f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-wrapper h2 {
+  margin-bottom: 30px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  font-size: 14px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 38px;
+  cursor: pointer;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background-color: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.signup-text {
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.divider {
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+  margin: 20px 0;
+}
+
+.btn-google {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.login-graphic-section {
+  flex: 1;
+  background-color: #6c63ff;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  text-align: center;
+}
+
+.login-graphic-section h1 {
+  font-size: 30px;
+  margin-bottom: 40px;
+}
+
+.login-graphic-section img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.password-group {
+  position: relative;
+}
+.graphic-mockup {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+.device {
+  position: absolute;
+  background-color: #ffffff22;
+  border: 2px solid white;
+  border-radius: 8px;
+}
+
+.laptop {
+  width: 100px;
+  height: 70px;
+  top: 20px;
+  left: 30px;
+  border-radius: 6px;
+}
+
+.phone {
+  width: 40px;
+  height: 80px;
+  top: 20px;
+  right: 30px;
+  border-radius: 12px;
+}
+
+.lock {
+  width: 30px;
+  height: 30px;
+  top: 120px;
+  left: 110px;
+  border-radius: 50%;
+}
+
+.line {
+  position: absolute;
+  height: 2px;
+  background-color: white;
+}
+
+.line-1 {
+  top: 50px;
+  left: 130px;
+  width: 70px;
+}
+
+.line-2 {
+  top: 135px;
+  left: 60px;
+  width: 120px;
+}
+
+

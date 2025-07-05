@@ -1,0 +1,128 @@
+.department-dashboard {
+  padding: 40px 60px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f4f6f9;
+  color: #333;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.search-bar {
+  padding: 10px 14px;
+  width: 250px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.card-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.info-card {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.subtle {
+  color: #1abc9c;
+  font-weight: 500;
+}
+
+.notif {
+  font-size: 14px;
+  color: #555;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.dashboard-table th {
+  background-color: #f4f6fb;
+  text-align: left;
+  padding: 14px 16px;
+}
+
+.dashboard-table td {
+  padding: 14px 16px;
+  border-top: 1px solid #eee;
+}
+
+.badge {
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge.pending {
+  background-color: #e8dfff;
+  color: #7e57c2;
+}
+
+.badge.completed {
+  background-color: #ccf2e2;
+  color: #28a745;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn.approve {
+  background-color: #e0f9ec;
+  color: #28a745;
+}
+
+.btn.reject {
+  background-color: #fdecea;
+  color: #e74c3c;
+}
+
+.btn.comment {
+  background-color: #f0f0ff;
+  color: #6c63ff;
+}
