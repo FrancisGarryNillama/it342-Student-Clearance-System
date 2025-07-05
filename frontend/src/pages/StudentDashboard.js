@@ -6,26 +6,58 @@ function StudentDashboard() {
   const [clearance, setClearance] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
+  const [requestType, setRequestType] = useState('');
+  const [file, setFile] = useState(null);
+
   useEffect(() => {
+    // Dummy data for now
     setStudent({
       name: "Test User",
-      role: "STUDENT",
-      id: "123456",
+      role: "Student",
+      id: "202501234",
       graduationYear: "2025",
-      updatedAt: "Now"
+      updatedAt: "2025-07-06 09:12 AM"
     });
 
     setClearance([
-      { department: "Accounting", status: "Approved", comment: "Cleared" },
-      { department: "Library", status: "Pending", comment: "Return overdue books" }
+      { department: "Dept A", status: "Approved", comment: "Comment text here." },
+      { department: "Dept B", status: "Pending", comment: "Comment text here." }
     ]);
 
     setNotifications([
-      "Your clearance for Accounting was approved.",
-      "Library requires action."
+      "New notification 1",
+      "New notification 2"
     ]);
   }, []);
 
+  const handleSubmit = async () => {
+    if (!requestType || !file) {
+      alert("Please select a type and upload a file.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("type", requestType);
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:8080/api/student/clearance-request", {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        alert("Clearance request submitted!");
+      } else {
+        const err = await response.text();
+        alert("Submission failed: " + err);
+      }
+    } catch (error) {
+      console.error("Error submitting request:", error);
+      alert("Something went wrong.");
+    }
+  };
 
   if (!student) return <p>Loading...</p>;
 
@@ -90,14 +122,26 @@ function StudentDashboard() {
       <h2>Submit Clearance Request</h2>
       <div className="submit-form">
         <label>Select Type:</label>
-        <div className="input-card">Option 1</div>
+        <select
+          className="input-card"
+          value={requestType}
+          onChange={(e) => setRequestType(e.target.value)}
+        >
+          <option value="">-- Choose Type --</option>
+          <option value="graduation">Graduation Clearance</option>
+          <option value="exit">Exit Clearance</option>
+        </select>
 
         <label>Upload Docs:</label>
-        <div className="input-card">Choose File</div>
+        <input
+          type="file"
+          className="input-card"
+          onChange={(e) => setFile(e.target.files[0])}
+        />
 
         <div className="button-row">
           <button className="print-btn">🖨️</button>
-          <button className="submit-btn">Submit 📤</button>
+          <button className="submit-btn" onClick={handleSubmit}>Submit 📤</button>
         </div>
       </div>
     </div>
@@ -105,5 +149,6 @@ function StudentDashboard() {
 }
 
 export default StudentDashboard;
+
 
 
