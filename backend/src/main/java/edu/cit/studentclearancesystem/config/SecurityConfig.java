@@ -42,7 +42,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2SuccessHandler)
                 )
                 // .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                .csrf(csrf -> csrf.disable()) // ⛔ CSRF token is often the root of POST 403 with cookies
+                .csrf(csrf -> csrf.disable())
 
                 .build();
     }
@@ -50,8 +50,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // ✅ frontend origin
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // ✅ add PATCH
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 

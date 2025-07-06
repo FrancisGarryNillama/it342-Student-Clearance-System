@@ -31,17 +31,20 @@ function RegistrarDashboard() {
     }
   };
 
-  const handleReject = async (id) => {
-    const reason = prompt("Enter rejection comment:");
-    if (!reason) return;
+    const handleReject = async (id) => {
+      const reason = prompt("Enter rejection comment:");
+      if (!reason) return;
 
-    try {
-      await axios.patch(`/registrar/request/${id}/reject`, { comment: reason }, { withCredentials: true });
-      fetchRequests();
-    } catch (err) {
-      alert("Failed to reject: " + (err.response?.data || err.message));
-    }
-  };
+      try {
+        await axios.patch(`/registrar/request/${id}/reject`, reason, {
+          headers: { 'Content-Type': 'text/plain' },
+          withCredentials: true
+        });
+        fetchRequests();
+      } catch (err) {
+        alert("Failed to reject: " + (err.response?.data || err.message));
+      }
+    };
 
     const handleReport = async () => {
       try {
