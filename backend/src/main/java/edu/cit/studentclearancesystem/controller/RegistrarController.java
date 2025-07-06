@@ -3,16 +3,17 @@ package edu.cit.studentclearancesystem.controller;
 import edu.cit.studentclearancesystem.entity.ClearanceTask;
 import edu.cit.studentclearancesystem.entity.TaskStatus;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
-import edu.cit.studentclearancesystem.service.ReportService;
+import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/registrar")
 @PreAuthorize("hasAuthority('REGISTRAR')")
@@ -20,7 +21,6 @@ import java.util.List;
 public class RegistrarController {
 
     private final ClearanceTaskRepository clearanceTaskRepository;
-    private final ReportService reportService;
 
     /**
      * Returns all clearance requests (e.g., for audit or full view).
@@ -42,47 +42,37 @@ public class RegistrarController {
      * Approve a specific clearance task.
      */
     @PatchMapping("/request/{taskId}/approve")
-    public String approveClearance(@PathVariable Long taskId) {
+    public ResponseEntity<String> approveClearance(@PathVariable Long taskId,
+                                                   @AuthenticationPrincipal CustomUserPrincipal principal) {
         ClearanceTask task = clearanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         task.setStatus(TaskStatus.APPROVED);
+        task.setUpdatedBy(principal.getUser());
+        task.setUpdatedAt(LocalDateTime.now());
+
         clearanceTaskRepository.save(task);
-        return "Approved task ID: " + taskId;
+        return ResponseEntity.ok("Approved task ID: " + taskId);
     }
 
     /**
-     * Reject a specific clearance task.
+     * Reject a specific clearance task (with comment as plain string).
      */
     @PatchMapping("/request/{taskId}/reject")
-    public String rejectClearance(@PathVariable Long taskId, @RequestBody RejectRequestBody body) {
+    public ResponseEntity<String> rejectClearance(@PathVariable Long taskId,
+                                                  @RequestBody String comment,
+                                                  @AuthenticationPrincipal CustomUserPrincipal principal) {
         ClearanceTask task = clearanceTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
+        String cleanComment = comment.replace("\"", "").trim();
         task.setStatus(TaskStatus.REJECTED);
-        task.setComment(body.getComment() != null ? body.getComment() : "Rejected by registrar.");
+        task.setComment(cleanComment.isEmpty() ? "Rejected by registrar." : cleanComment);
+        task.setUpdatedBy(principal.getUser());
+        task.setUpdatedAt(LocalDateTime.now());
+
         clearanceTaskRepository.save(task);
-        return "Rejected task ID: " + taskId;
-    }
-
-    /**
-     * Download a generated PDF report.
-     */
-    @GetMapping("/report")
-    public ResponseEntity<byte[]> downloadReport() {
-        byte[] pdfBytes = reportService.generatePdfReport();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=clearance-report.pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfBytes);
-    }
-
-    // DTO class for rejection comment
-    public static class RejectRequestBody {
-        private String comment;
-        public String getComment() { return comment; }
-        public void setComment(String comment) { this.comment = comment; }
+        return ResponseEntity.ok("Rejected task ID: " + taskId);
     }
 }
 
