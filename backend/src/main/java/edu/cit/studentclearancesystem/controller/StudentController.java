@@ -1,36 +1,75 @@
 package edu.cit.studentclearancesystem.controller;
 
-import edu.cit.studentclearancesystem.entity.ClearanceTask;
-import edu.cit.studentclearancesystem.entity.User;
+import edu.cit.studentclearancesystem.entity.*;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
+import edu.cit.studentclearancesystem.repository.DepartmentRepository;
 import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
-import org.springframework.security.core.Authentication;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/student")
 @PreAuthorize("hasAuthority('STUDENT')")
+@RequiredArgsConstructor
 public class StudentController {
 
     private final ClearanceTaskRepository clearanceTaskRepository;
+    private final DepartmentRepository departmentRepository;
 
-    @Autowired
-    public StudentController(ClearanceTaskRepository clearanceTaskRepository) {
-        this.clearanceTaskRepository = clearanceTaskRepository;
-    }
-
+    // Fetch student's clearance tasks
     @GetMapping("/clearance-tasks")
-    public List<ClearanceTask> getStudentTasks(Authentication auth) {
-        // Get the current logged-in user
+    public List<ClearanceTask> getStudentClearanceTasks(Authentication auth) {
         User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
-        // Fetch clearance tasks by user
         return clearanceTaskRepository.findByUser(currentUser);
     }
+
+    // Submit new clearance request
+    @PostMapping("/clearance-request")
+    public ResponseEntity<?> submitClearanceRequest(
+            @RequestParam("type") String type,
+            @RequestParam("file") MultipartFile file,
+            Authentication auth
+    ) {
+        try {
+            User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
+
+            // Determine department dynamically by type
+            String deptName = switch (type.toLowerCase()) {
+                case "graduation" -> "Registrar";
+                case "exit" -> "Department"; // Adjust this if needed
+                default -> throw new IllegalArgumentException("Invalid type: " + type);
+            };
+
+            Department department = departmentRepository.findByName(deptName)
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+
+            ClearanceTask task = new ClearanceTask();
+            task.setUser(currentUser);
+            task.setDepartment(department);
+            task.setStatus(TaskStatus.PENDING);
+            task.setComment("Submitted: " + type);
+            task.setUpdatedAt(LocalDateTime.now());
+            task.setUpdatedBy(currentUser);
+
+            clearanceTaskRepository.save(task);
+
+            // You could store the file in the filesystem or DB if needed here
+
+            return ResponseEntity.ok("Clearance task submitted.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to submit: " + e.getMessage());
+        }
+    }
 }
+
+
+
+
 

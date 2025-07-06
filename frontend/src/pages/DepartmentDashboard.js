@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './DepartmentDashboard.css';
+import axios from '../services/api';
 
 function DepartmentDashboard() {
   const [user, setUser] = useState(null);
@@ -7,31 +8,30 @@ function DepartmentDashboard() {
   const [processed, setProcessed] = useState([]);
 
   useEffect(() => {
-    setUser({
-      name: 'Test User',
-      role: 'Admin',
-      department: 'Computer Science',
-    });
+    // Fetch current user info
+    axios.get('/user', { withCredentials: true })
+      .then(res => {
+        if (res.data.role !== 'DEPT_HEAD') {
+          window.location.href = '/';
+        } else {
+          setUser({
+            name: res.data.fullName,
+            role: 'Dept Head',
+            department: res.data.department?.name || 'Unknown'
+          });
+        }
+      })
+      .catch(() => window.location.href = '/');
 
-    setPending([
-      { name: 'Student A', id: 'ID123', date: '2025-06-19', status: 'Pending' },
-      { name: 'Student A', id: 'ID123', date: '2025-06-19', status: 'Pending' }
-    ]);
+    // Fetch pending clearance tasks
+    axios.get('/dept/clearance-tasks?status=PENDING', { withCredentials: true })
+      .then(res => setPending(res.data))
+      .catch(() => setPending([]));
 
-    setProcessed([
-      {
-        department: '00001',
-        status: '089 Kutch Green Apt. 448',
-        comment: '04 Sep 2019',
-        date: '04 Sep 2019'
-      },
-      {
-        department: '00001',
-        status: '089 Kutch Green Apt. 448',
-        comment: '04 Sep 2019',
-        date: '04 Sep 2019'
-      }
-    ]);
+    // Fetch processed clearance tasks
+    axios.get('/dept/clearance-tasks?status=PROCESSED', { withCredentials: true })
+      .then(res => setProcessed(res.data))
+      .catch(() => setProcessed([]));
   }, []);
 
   if (!user) return <p>Loading...</p>;
@@ -72,25 +72,29 @@ function DepartmentDashboard() {
           <tr>
             <th>Student Name</th>
             <th>Student ID</th>
-            <th>Date</th>
+            <th>Updated</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {pending.map((item, index) => (
-            <tr key={index}>
-              <td>{item.name}</td>
-              <td>{item.id}</td>
-              <td>{item.date}</td>
-              <td><span className="badge pending">{item.status}</span></td>
-              <td className="actions">
-                <button className="btn approve">Approve</button>
-                <button className="btn reject">Reject</button>
-                <button className="btn comment">Comment</button>
-              </td>
-            </tr>
-          ))}
+          {pending.length === 0 ? (
+            <tr><td colSpan="5">No pending tasks.</td></tr>
+          ) : (
+            pending.map((task, index) => (
+              <tr key={index}>
+                <td>{task.user?.fullName}</td>
+                <td>{task.user?.email}</td>
+                <td>{new Date(task.updatedAt).toLocaleDateString()}</td>
+                <td><span className="badge pending">{task.status}</span></td>
+                <td className="actions">
+                  <button className="btn approve">Approve</button>
+                  <button className="btn reject">Reject</button>
+                  <button className="btn comment">Comment</button>
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
@@ -98,23 +102,27 @@ function DepartmentDashboard() {
       <table className="dashboard-table">
         <thead>
           <tr>
-            <th>Department</th>
+            <th>Student</th>
             <th>Status</th>
-            <th>Comments</th>
-            <th>Date</th>
+            <th>Comment</th>
+            <th>Updated</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {processed.map((item, index) => (
-            <tr key={index}>
-              <td>{item.department}</td>
-              <td>{item.status}</td>
-              <td>{item.comment}</td>
-              <td>{item.date}</td>
-              <td><span className="badge completed">Completed</span></td>
-            </tr>
-          ))}
+          {processed.length === 0 ? (
+            <tr><td colSpan="5">No processed tasks.</td></tr>
+          ) : (
+            processed.map((task, index) => (
+              <tr key={index}>
+                <td>{task.user?.fullName}</td>
+                <td><span className={`badge ${task.status.toLowerCase()}`}>{task.status}</span></td>
+                <td>{task.comment}</td>
+                <td>{new Date(task.updatedAt).toLocaleDateString()}</td>
+                <td><span className="badge completed">Completed</span></td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>
@@ -122,4 +130,5 @@ function DepartmentDashboard() {
 }
 
 export default DepartmentDashboard;
+
 
