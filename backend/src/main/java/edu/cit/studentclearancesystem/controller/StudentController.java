@@ -11,53 +11,49 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/student")
+@PreAuthorize("hasAuthority('STUDENT')")
 @RequiredArgsConstructor
 public class StudentController {
 
     private final ClearanceTaskRepository clearanceTaskRepository;
     private final DepartmentRepository departmentRepository;
 
-    // ✅ Move PreAuthorize to method level
+    // Fetch student's clearance tasks
     @GetMapping("/clearance-tasks")
-    @PreAuthorize("hasAuthority('STUDENT')")
     public List<ClearanceTask> getStudentClearanceTasks(Authentication auth) {
         User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
         return clearanceTaskRepository.findByUser(currentUser);
     }
 
     @PostMapping("/clearance-request")
-    @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<?> submitClearanceRequest(
             @RequestParam("type") String type,
             @RequestParam("file") MultipartFile file,
             Authentication auth
     ) {
         try {
-            System.out.println(">>> AUTH CLASS: " + auth.getClass());
-            System.out.println(">>> PRINCIPAL CLASS: " + auth.getPrincipal().getClass());
-            System.out.println(">>> AUTHORITIES: " + auth.getAuthorities());
-            System.out.println(">>> USER: " + ((CustomUserPrincipal) auth.getPrincipal()).getUser().getEmail());
-
             User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
 
-            // Determine department name by request type
+            // Determine department dynamically by type
             String deptName = switch (type.toLowerCase()) {
                 case "graduation" -> "Registrar";
-                case "exit" -> "Department";
+                case "exit" -> "Department"; // Adjust this if needed
                 default -> throw new IllegalArgumentException("Invalid type: " + type);
             };
 
-            System.out.println("Looking up department: " + deptName);
-
-            Department department = departmentRepository.findByNameIgnoreCase(deptName)
-                    .orElseThrow(() -> new RuntimeException("Department not found: " + deptName));
-
-            System.out.println("Matched department: " + department.getName());
+            Department department = departmentRepository.findByName(deptName)
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
 
             ClearanceTask task = new ClearanceTask();
             task.setUser(currentUser);
@@ -67,14 +63,27 @@ public class StudentController {
             task.setUpdatedAt(LocalDateTime.now());
             task.setUpdatedBy(currentUser);
 
+            // 📁 Define upload path
+            String filename = "student" + currentUser.getUserId() + "_" + type.toLowerCase() + "_" + System.currentTimeMillis() + ".pdf";
+            // ✅ Save to the actual project directory
+            Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads", filename);
+
+            Files.createDirectories(uploadPath.getParent());
+
+            file.transferTo(uploadPath.toFile());
+
+            task.setFileUrl("/uploads/" + filename);
+
+
             clearanceTaskRepository.save(task);
 
             return ResponseEntity.ok("Clearance task submitted.");
         } catch (Exception e) {
-            e.printStackTrace(); // Optional for debugging
             return ResponseEntity.badRequest().body("Failed to submit: " + e.getMessage());
         }
+
     }
+
 }
 
 

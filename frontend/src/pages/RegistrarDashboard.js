@@ -1,38 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import './RegistrarDashboard.css';
+import axios from '../services/api';
 
 function RegistrarDashboard() {
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    // Fetch user info
-    fetch('http://localhost:8080/api/user', {
-      credentials: 'include'
-    })
-      .then(res => res.json())
-      .then(data => {
-        setUser({
-          name: data.fullName,
-          role: data.role
-        });
+    axios.get('/user', { withCredentials: true })
+      .then(res => {
+        setUser({ name: res.data.fullName, role: res.data.role });
       })
-      .catch(() => {
-        setUser({ name: 'Unknown', role: 'REGISTRAR' });
-      });
+      .catch(() => setUser({ name: 'Unknown', role: 'REGISTRAR' }));
 
-    // Fetch pending student clearance requests
-    fetch('http://localhost:8080/api/registrar/requests', {
-      credentials: 'include'
-    })
-      .then(res => res.json())
-      .then(data => {
-        setRequests(data); // assumes backend returns a list of student requests
-      })
-      .catch(() => {
-        setRequests([]);
-      });
+    fetchRequests();
   }, []);
+
+  const fetchRequests = () => {
+    axios.get('/registrar/requests', { withCredentials: true })
+      .then(res => setRequests(res.data || []))
+      .catch(() => setRequests([]));
+  };
+
+  const handleApprove = async (id) => {
+    try {
+      await axios.patch(`/registrar/request/${id}/approve`, {}, { withCredentials: true });
+      fetchRequests();
+    } catch (err) {
+      alert("Failed to approve: " + (err.response?.data || err.message));
+    }
+  };
+
+  const handleReject = async (id) => {
+    const reason = prompt("Enter rejection comment:");
+    if (!reason) return;
+
+    try {
+      await axios.patch(`/registrar/request/${id}/reject`, { comment: reason }, { withCredentials: true });
+      fetchRequests();
+    } catch (err) {
+      alert("Failed to reject: " + (err.response?.data || err.message));
+    }
+  };
 
   if (!user) return <p>Loading...</p>;
 
@@ -57,7 +66,7 @@ function RegistrarDashboard() {
       <div className="card-row">
         <div className="info-card">
           <p><strong>Registrar Overview</strong></p>
-          <p className="subtle">Monitor all clearance processes.</p>
+          <p className="subtle">Monitor all graduation clearances.</p>
         </div>
         <div className="info-card">
           <p><strong>System Alerts</strong></p>
@@ -65,33 +74,57 @@ function RegistrarDashboard() {
         </div>
       </div>
 
-      <h2>Pending Requests for Review</h2>
+      <h2>Pending Graduation Clearance Requests</h2>
       <table className="dashboard-table">
         <thead>
           <tr>
             <th>Student Name</th>
-            <th>Student ID</th>
-            <th>Overall Status</th>
-            <th>Progress</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Comment</th>
+            <th>File</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {requests.map((req, i) => (
-            <tr key={i}>
-              <td>{req.name}</td>
-              <td>{req.id}</td>
-              <td><span className={`badge ${req.status.toLowerCase().replace(' ', '-')}`}>{req.status}</span></td>
-              <td>{req.progress}</td>
-              <td><button className="btn comment">Comment</button></td>
-            </tr>
-          ))}
+          {requests.length === 0 ? (
+            <tr><td colSpan="6">No requests found.</td></tr>
+          ) : (
+            requests.map((req, i) => (
+              <tr key={i}>
+                <td>{req.user?.fullName}</td>
+                <td>{req.user?.email}</td>
+                <td>
+                  <span className={`badge ${req.status.toLowerCase()}`}>
+                    {req.status}
+                  </span>
+                </td>
+                <td>{req.comment || '—'}</td>
+                <td>
+                  {req.fileUrl
+                    ? <a href={`http://localhost:8080${req.fileUrl}`} target="_blank" rel="noreferrer">👁 View</a>
+                    : 'No File'}
+                </td>
+                <td>
+                  {req.status === 'PENDING' ? (
+                    <>
+                      <button className="btn comment" onClick={() => handleApprove(req.id)}>✅ Approve</button>
+                      <button className="btn comment" onClick={() => handleReject(req.id)}>❌ Reject</button>
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
 
       <div className="triple-box">
         <div className="box">
           <h3>Audit Logs</h3>
+          <p>Coming soon: view logs of all actions taken.</p>
         </div>
         <div className="box">
           <h3>Generate Reports</h3>
@@ -104,7 +137,7 @@ function RegistrarDashboard() {
       <div className="box wide">
         <h3>API Documentation</h3>
         <button className="submit-btn">
-          Submit <span>📤</span>
+          Open Docs <span>📘</span>
         </button>
       </div>
     </div>
@@ -112,6 +145,8 @@ function RegistrarDashboard() {
 }
 
 export default RegistrarDashboard;
+
+
 
 
 
