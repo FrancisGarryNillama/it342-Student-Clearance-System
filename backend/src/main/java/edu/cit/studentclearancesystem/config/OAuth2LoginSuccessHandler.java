@@ -75,7 +75,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String redirectUrl = switch (role) {
             case "STUDENT" -> "http://localhost:3000/student";
             case "REGISTRAR" -> "http://localhost:3000/registrar";
-            case "DEPARTMENT" -> "http://localhost:3000/department";
+            case "DEPT_HEAD" -> "http://localhost:3000/department";
             default -> "http://localhost:3000";
         };
 

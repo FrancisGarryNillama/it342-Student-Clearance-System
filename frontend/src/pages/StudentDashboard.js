@@ -6,7 +6,6 @@ function StudentDashboard() {
   const [student, setStudent] = useState(null);
   const [clearance, setClearance] = useState([]);
   const [notifications, setNotifications] = useState([]);
-
   const [requestType, setRequestType] = useState('');
   const [file, setFile] = useState(null);
 
@@ -21,26 +20,29 @@ function StudentDashboard() {
             name: res.data.fullName,
             role: 'Student',
             id: res.data.email,
-            graduationYear: '2025', // Replace if you store this
+            graduationYear: '2025',
             updatedAt: new Date().toLocaleString()
           });
         }
       })
       .catch(() => window.location.href = '/');
 
-    // Load clearance status
-    axios.get('/student/clearance-status', { withCredentials: true })
+    // Load clearance tasks
+    axios.get('/student/clearance-tasks', { withCredentials: true })
       .then(res => {
-        setClearance(res.data); // Should be: [{ department, status, comment }]
+        setClearance(res.data || []);
       })
-      .catch(err => console.error('Failed to load clearance:', err));
+      .catch(err => {
+        console.error('Failed to load clearance tasks:', err);
+        setClearance([]);
+      });
 
-    // Load notifications
+    // Optionally load notifications if your backend supports it
     axios.get('/student/notifications', { withCredentials: true })
       .then(res => {
-        setNotifications(res.data); // Should be: [string, string, ...]
+        setNotifications(res.data || []);
       })
-      .catch(err => console.error('Failed to load notifications:', err));
+      .catch(() => setNotifications([]));
   }, []);
 
   const handleSubmit = async () => {
@@ -54,23 +56,27 @@ function StudentDashboard() {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8080/api/student/clearance-request", {
-        method: "POST",
-        body: formData,
-        credentials: "include"
+      const response = await axios.post('/student/clearance-request', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true
       });
 
-      if (response.ok) {
-        alert("Clearance request submitted!");
-      } else {
-        const err = await response.text();
-        alert("Submission failed: " + err);
-      }
+      alert("Clearance request submitted!");
+
+      // ✅ RE-FETCH updated clearance tasks
+      const updated = await axios.get('/student/clearance-tasks', { withCredentials: true });
+      setClearance(updated.data || []);
+
+      // Clear form
+      setRequestType('');
+      setFile(null);
     } catch (error) {
-      console.error("Error submitting request:", error);
-      alert("Something went wrong.");
+      console.error("Submission failed:", error);
+      alert("Submission failed: " + (error.response?.data || error.message));
     }
   };
+
+
 
   if (!student) return <p>Loading...</p>;
 
@@ -107,8 +113,8 @@ function StudentDashboard() {
           {notifications.length === 0
             ? <p className="subtle">No new notifications</p>
             : notifications.map((note, i) => (
-                <p className="notif" key={i}>{note}</p>
-              ))}
+              <p className="notif" key={i}>{note}</p>
+            ))}
         </div>
       </div>
 
@@ -129,7 +135,7 @@ function StudentDashboard() {
             </tr>
           ) : clearance.map((row, i) => (
             <tr key={i}>
-              <td>{row.department}</td>
+              <td>{row.department?.name || 'N/A'}</td>
               <td><span className={`badge ${row.status.toLowerCase()}`}>{row.status}</span></td>
               <td>{row.comment}</td>
               <td><a href="#">View</a></td>
