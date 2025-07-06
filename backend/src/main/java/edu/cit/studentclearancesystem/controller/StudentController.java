@@ -16,39 +16,48 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/student")
-@PreAuthorize("hasAuthority('STUDENT')")
 @RequiredArgsConstructor
 public class StudentController {
 
     private final ClearanceTaskRepository clearanceTaskRepository;
     private final DepartmentRepository departmentRepository;
 
-    // Fetch student's clearance tasks
+    // ✅ Move PreAuthorize to method level
     @GetMapping("/clearance-tasks")
+    @PreAuthorize("hasAuthority('STUDENT')")
     public List<ClearanceTask> getStudentClearanceTasks(Authentication auth) {
         User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
         return clearanceTaskRepository.findByUser(currentUser);
     }
 
-    // Submit new clearance request
     @PostMapping("/clearance-request")
+    @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<?> submitClearanceRequest(
             @RequestParam("type") String type,
             @RequestParam("file") MultipartFile file,
             Authentication auth
     ) {
         try {
+            System.out.println(">>> AUTH CLASS: " + auth.getClass());
+            System.out.println(">>> PRINCIPAL CLASS: " + auth.getPrincipal().getClass());
+            System.out.println(">>> AUTHORITIES: " + auth.getAuthorities());
+            System.out.println(">>> USER: " + ((CustomUserPrincipal) auth.getPrincipal()).getUser().getEmail());
+
             User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
 
-            // Determine department dynamically by type
+            // Determine department name by request type
             String deptName = switch (type.toLowerCase()) {
                 case "graduation" -> "Registrar";
-                case "exit" -> "Department"; // Adjust this if needed
+                case "exit" -> "Department";
                 default -> throw new IllegalArgumentException("Invalid type: " + type);
             };
 
-            Department department = departmentRepository.findByName(deptName)
-                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            System.out.println("Looking up department: " + deptName);
+
+            Department department = departmentRepository.findByNameIgnoreCase(deptName)
+                    .orElseThrow(() -> new RuntimeException("Department not found: " + deptName));
+
+            System.out.println("Matched department: " + department.getName());
 
             ClearanceTask task = new ClearanceTask();
             task.setUser(currentUser);
@@ -60,14 +69,14 @@ public class StudentController {
 
             clearanceTaskRepository.save(task);
 
-            // You could store the file in the filesystem or DB if needed here
-
             return ResponseEntity.ok("Clearance task submitted.");
         } catch (Exception e) {
+            e.printStackTrace(); // Optional for debugging
             return ResponseEntity.badRequest().body("Failed to submit: " + e.getMessage());
         }
     }
 }
+
 
 
 

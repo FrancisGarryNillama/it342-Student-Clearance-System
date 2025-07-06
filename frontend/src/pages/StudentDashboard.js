@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './StudentDashboard.css';
-import axios from '../services/api';
+import axios from '../services/api'; // baseURL = "/api"
 
 function StudentDashboard() {
   const [student, setStudent] = useState(null);
@@ -11,7 +11,7 @@ function StudentDashboard() {
 
   useEffect(() => {
     // Load student info
-    axios.get('/user', { withCredentials: true })
+    axios.get('/user')
       .then(res => {
         if (res.data.role !== 'STUDENT') {
           window.location.href = '/';
@@ -28,7 +28,7 @@ function StudentDashboard() {
       .catch(() => window.location.href = '/');
 
     // Load clearance tasks
-    axios.get('/student/clearance-tasks', { withCredentials: true })
+    axios.get('/student/clearance-tasks')
       .then(res => {
         setClearance(res.data || []);
       })
@@ -37,8 +37,8 @@ function StudentDashboard() {
         setClearance([]);
       });
 
-    // Optionally load notifications if your backend supports it
-    axios.get('/student/notifications', { withCredentials: true })
+    // Load notifications
+    axios.get('/notifications')
       .then(res => {
         setNotifications(res.data || []);
       })
@@ -56,27 +56,25 @@ function StudentDashboard() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post('/student/clearance-request', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true
-      });
+      const response = await axios.post('/student/clearance-request', formData);
 
       alert("Clearance request submitted!");
 
-      // ✅ RE-FETCH updated clearance tasks
-      const updated = await axios.get('/student/clearance-tasks', { withCredentials: true });
+      const updated = await axios.get('/student/clearance-tasks');
       setClearance(updated.data || []);
 
-      // Clear form
       setRequestType('');
       setFile(null);
     } catch (error) {
       console.error("Submission failed:", error);
-      alert("Submission failed: " + (error.response?.data || error.message));
+      if (error.response) {
+        console.error("Backend error:", error.response.data);
+        alert("Error: " + JSON.stringify(error.response.data));
+      } else {
+        alert("Network error: " + error.message);
+      }
     }
   };
-
-
 
   if (!student) return <p>Loading...</p>;
 
