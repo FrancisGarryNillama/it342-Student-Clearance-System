@@ -32,4 +32,6 @@ public class ClearanceTask {
     private User updatedBy;
 
     private LocalDateTime updatedAt;
+
+    private String fileUrl;
 }

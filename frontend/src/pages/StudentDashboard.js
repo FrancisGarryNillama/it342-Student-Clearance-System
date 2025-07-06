@@ -10,7 +10,6 @@ function StudentDashboard() {
   const [file, setFile] = useState(null);
 
   useEffect(() => {
-    // Load student info
     axios.get('/user')
       .then(res => {
         if (res.data.role !== 'STUDENT') {
@@ -27,7 +26,6 @@ function StudentDashboard() {
       })
       .catch(() => window.location.href = '/');
 
-    // Load clearance tasks
     axios.get('/student/clearance-tasks')
       .then(res => {
         setClearance(res.data || []);
@@ -37,7 +35,6 @@ function StudentDashboard() {
         setClearance([]);
       });
 
-    // Load notifications
     axios.get('/notifications')
       .then(res => {
         setNotifications(res.data || []);
@@ -56,7 +53,12 @@ function StudentDashboard() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post('/student/clearance-request', formData);
+      const response = await axios.post('/student/clearance-request', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true
+      });
 
       alert("Clearance request submitted!");
 
