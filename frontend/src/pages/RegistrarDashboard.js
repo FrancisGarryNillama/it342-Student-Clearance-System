@@ -43,6 +43,25 @@ function RegistrarDashboard() {
     }
   };
 
+    const handleReport = async () => {
+      try {
+        const res = await axios.get('/registrar/report', {
+          responseType: 'blob',
+          withCredentials: true
+        });
+
+        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'clearance-report.pdf';
+        link.click();
+      } catch (err) {
+        alert("Failed to generate report.");
+        console.error(err);
+      }
+    };
+
+
   if (!user) return <p>Loading...</p>;
 
   return (
@@ -108,8 +127,8 @@ function RegistrarDashboard() {
                 <td>
                   {req.status === 'PENDING' ? (
                     <>
-                      <button className="btn comment" onClick={() => handleApprove(req.id)}>✅ Approve</button>
-                      <button className="btn comment" onClick={() => handleReject(req.id)}>❌ Reject</button>
+                      <button className="btn comment" onClick={() => handleApprove(req.taskId)}>✅ Approve</button>
+                      <button className="btn comment" onClick={() => handleReject(req.taskId)}>❌ Reject</button>
                     </>
                   ) : (
                     '—'
@@ -128,15 +147,15 @@ function RegistrarDashboard() {
         </div>
         <div className="box">
           <h3>Generate Reports</h3>
-          <button className="submit-btn">
-            Submit <span>📤</span>
+          <button className="submit-btn" onClick={handleReport}>
+            Download Report <span>📄</span>
           </button>
         </div>
       </div>
 
       <div className="box wide">
         <h3>API Documentation</h3>
-        <button className="submit-btn">
+        <button className="submit-btn" onClick={() => window.open('http://localhost:8080/swagger-ui.html', '_blank')}>
           Open Docs <span>📘</span>
         </button>
       </div>
@@ -145,6 +164,7 @@ function RegistrarDashboard() {
 }
 
 export default RegistrarDashboard;
+
 
 
 
