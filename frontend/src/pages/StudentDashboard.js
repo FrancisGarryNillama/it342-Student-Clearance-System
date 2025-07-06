@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './StudentDashboard.css';
+import axios from '../services/api';
 
 function StudentDashboard() {
   const [student, setStudent] = useState(null);
@@ -10,24 +11,36 @@ function StudentDashboard() {
   const [file, setFile] = useState(null);
 
   useEffect(() => {
-    // Dummy data for now
-    setStudent({
-      name: "Test User",
-      role: "Student",
-      id: "202501234",
-      graduationYear: "2025",
-      updatedAt: "2025-07-06 09:12 AM"
-    });
+    // Load student info
+    axios.get('/user', { withCredentials: true })
+      .then(res => {
+        if (res.data.role !== 'STUDENT') {
+          window.location.href = '/';
+        } else {
+          setStudent({
+            name: res.data.fullName,
+            role: 'Student',
+            id: res.data.email,
+            graduationYear: '2025', // Replace if you store this
+            updatedAt: new Date().toLocaleString()
+          });
+        }
+      })
+      .catch(() => window.location.href = '/');
 
-    setClearance([
-      { department: "Dept A", status: "Approved", comment: "Comment text here." },
-      { department: "Dept B", status: "Pending", comment: "Comment text here." }
-    ]);
+    // Load clearance status
+    axios.get('/student/clearance-status', { withCredentials: true })
+      .then(res => {
+        setClearance(res.data); // Should be: [{ department, status, comment }]
+      })
+      .catch(err => console.error('Failed to load clearance:', err));
 
-    setNotifications([
-      "New notification 1",
-      "New notification 2"
-    ]);
+    // Load notifications
+    axios.get('/student/notifications', { withCredentials: true })
+      .then(res => {
+        setNotifications(res.data); // Should be: [string, string, ...]
+      })
+      .catch(err => console.error('Failed to load notifications:', err));
   }, []);
 
   const handleSubmit = async () => {
@@ -91,9 +104,11 @@ function StudentDashboard() {
         </div>
         <div className="info-card">
           <p><strong>Notifications</strong></p>
-          {notifications.map((note, i) => (
-            <p className="notif" key={i}>{note}</p>
-          ))}
+          {notifications.length === 0
+            ? <p className="subtle">No new notifications</p>
+            : notifications.map((note, i) => (
+                <p className="notif" key={i}>{note}</p>
+              ))}
         </div>
       </div>
 
@@ -108,7 +123,11 @@ function StudentDashboard() {
           </tr>
         </thead>
         <tbody>
-          {clearance.map((row, i) => (
+          {clearance.length === 0 ? (
+            <tr>
+              <td colSpan="4">No clearance records found.</td>
+            </tr>
+          ) : clearance.map((row, i) => (
             <tr key={i}>
               <td>{row.department}</td>
               <td><span className={`badge ${row.status.toLowerCase()}`}>{row.status}</span></td>

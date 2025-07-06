@@ -12,28 +12,25 @@ function LoginPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
-    // Simulated login (replace with real API call later)
     try {
-        const res = await login(email, password);
-        if (res.status === 1) {
-          localStorage.setItem('userRole', res.results.role);
-          navigate(`/${res.results.role.toLowerCase()}`);
-        } else {
-          setError(res.message);
-        }
-      } catch (err) {
-        setError('Login failed: ' + err.message);
-      }
+      const res = await login(email, password);
 
-    // Real API example:
-    // try {
-    //   const res = await axios.post('/api/login', { email, password });
-    //   localStorage.setItem('userRole', res.data.role);
-    //   navigate(`/${res.data.role.toLowerCase()}`);
-    // } catch (err) {
-    //   setError('Login failed');
-    // }
+      if (res.status === 1 && res.results?.role) {
+        const role = res.results.role.toLowerCase();
+        localStorage.setItem('userRole', role);
+        navigate(`/${role}`);
+      } else {
+        setError(res.message || 'Invalid login.');
+      }
+    } catch (err) {
+      setError('Login failed: ' + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:8080/login';
   };
 
   return (
@@ -78,7 +75,13 @@ function LoginPage() {
 
             <p className="signup-text">Don’t have an account? <a href="#">Create one</a></p>
             <div className="divider">or continue with</div>
-            <button type="button" className="btn-google">Google OAuth</button>
+            <button
+              type="button"
+              className="btn-google"
+              onClick={handleGoogleLogin}
+            >
+              Google OAuth
+            </button>
           </form>
         </div>
       </div>
@@ -93,11 +96,12 @@ function LoginPage() {
           <div className="line line-2"></div>
         </div>
       </div>
-
     </div>
   );
 }
 
 export default LoginPage;
+
+
 
 
