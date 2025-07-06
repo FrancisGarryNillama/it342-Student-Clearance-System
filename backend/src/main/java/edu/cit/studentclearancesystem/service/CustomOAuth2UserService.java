@@ -1,13 +1,12 @@
 package edu.cit.studentclearancesystem.service;
 
-import edu.cit.studentclearancesystem.entity.Role;
-import edu.cit.studentclearancesystem.entity.User;
+import edu.cit.studentclearancesystem.entity.*;
 import edu.cit.studentclearancesystem.repository.UserRepository;
 import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.client.userinfo.*;
 import org.springframework.security.oauth2.core.*;
+import org.springframework.security.oauth2.core.user.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -31,22 +30,20 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            // Default role assignment for new users
             user = User.builder()
                     .googleId(googleId)
                     .email(email)
                     .fullName(name)
                     .profileUrl(picture)
-                    .role(Role.STUDENT) // Default role
+                    .role(Role.STUDENT)
                     .build();
         } else {
-            // Update profile if already exists
             user.setFullName(name);
             user.setProfileUrl(picture);
         }
 
         userRepository.save(user);
 
-        return new CustomUserPrincipal(user, attributes);
+        return new CustomUserPrincipal(user, attributes); // ✅ key
     }
 }
