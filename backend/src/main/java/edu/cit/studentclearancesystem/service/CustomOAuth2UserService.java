@@ -30,20 +30,24 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         User user = userRepository.findByEmail(email);
         if (user == null) {
+            // New user
             user = User.builder()
                     .googleId(googleId)
                     .email(email)
                     .fullName(name)
                     .profileUrl(picture)
-                    .role(Role.STUDENT)
+                    .role(Role.STUDENT) // Default role
                     .build();
         } else {
+            // Existing user - update info
             user.setFullName(name);
             user.setProfileUrl(picture);
         }
 
         userRepository.save(user);
 
-        return new CustomUserPrincipal(user, attributes); // ✅ key
+        // 🔁 Fetch latest role from DB
+        User refreshedUser = userRepository.findByEmail(email);
+        return new CustomUserPrincipal(refreshedUser, attributes);
     }
 }

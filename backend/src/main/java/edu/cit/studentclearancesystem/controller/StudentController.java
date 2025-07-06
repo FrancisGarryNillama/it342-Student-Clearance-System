@@ -25,15 +25,12 @@ public class StudentController {
         this.clearanceTaskRepository = clearanceTaskRepository;
     }
 
-    @GetMapping("/dashboard")
-    public String studentDashboard() {
-        return "Welcome to Student Dashboard";
-    }
-
     @GetMapping("/clearance-tasks")
     public List<ClearanceTask> getStudentTasks(Authentication auth) {
-        // Use CustomUserPrincipal to get the current User
+        // Get the current logged-in user
         User currentUser = ((CustomUserPrincipal) auth.getPrincipal()).getUser();
+        // Fetch clearance tasks by user
         return clearanceTaskRepository.findByUser(currentUser);
     }
 }
+

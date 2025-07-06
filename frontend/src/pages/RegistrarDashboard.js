@@ -6,25 +6,32 @@ function RegistrarDashboard() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    setUser({
-      name: 'Megan Fox',
-      role: 'Admin'
-    });
+    // Fetch user info
+    fetch('http://localhost:8080/api/user', {
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(data => {
+        setUser({
+          name: data.fullName,
+          role: data.role
+        });
+      })
+      .catch(() => {
+        setUser({ name: 'Unknown', role: 'REGISTRAR' });
+      });
 
-    setRequests([
-      {
-        name: 'Student A',
-        id: 'ID123',
-        status: 'Completed',
-        progress: '100%'
-      },
-      {
-        name: 'Student B',
-        id: 'ID234',
-        status: 'In Progress',
-        progress: '50%'
-      }
-    ]);
+    // Fetch pending student clearance requests
+    fetch('http://localhost:8080/api/registrar/requests', {
+      credentials: 'include'
+    })
+      .then(res => res.json())
+      .then(data => {
+        setRequests(data); // assumes backend returns a list of student requests
+      })
+      .catch(() => {
+        setRequests([]);
+      });
   }, []);
 
   if (!user) return <p>Loading...</p>;
@@ -105,5 +112,6 @@ function RegistrarDashboard() {
 }
 
 export default RegistrarDashboard;
+
 
 
