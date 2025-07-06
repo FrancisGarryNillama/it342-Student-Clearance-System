@@ -7,6 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
+
+    // 🔄 This one is case-sensitive
     Optional<Department> findByName(String name);
-    Optional<Department> findByHead(User head); // ✅ This line needs User imported
+
+    // ✅ Add this for case-insensitive matching
+    Optional<Department> findByNameIgnoreCase(String name);
+
+    Optional<Department> findByHead(User head);
 }
+

@@ -47,30 +47,32 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                         .email(email)
                         .fullName(name)
                         .profileUrl(picture)
-                        .role(Role.STUDENT) // Default role if not found
+                        .role(Role.STUDENT) // default role
                         .build();
             } else {
-                // Update info if changed
                 user.setFullName(name);
                 user.setProfileUrl(picture);
+                if (user.getRole() == null) {
+                    user.setRole(Role.STUDENT);
+                }
             }
 
             userRepository.save(user);
-
             customPrincipal = new CustomUserPrincipal(user, oauthUser.getAttributes());
-
-            // Replace principal in SecurityContext
-            OAuth2AuthenticationToken newAuth = new OAuth2AuthenticationToken(
-                    customPrincipal,
-                    customPrincipal.getAuthorities(),
-                    ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId()
-            );
-            SecurityContextHolder.getContext().setAuthentication(newAuth);
 
         } else {
             throw new RuntimeException("Unknown principal type: " + principal.getClass());
         }
 
+        // ✅ ALWAYS reassign the Authentication so Spring Security uses the correct principal + authorities
+        OAuth2AuthenticationToken newAuth = new OAuth2AuthenticationToken(
+                customPrincipal,
+                customPrincipal.getAuthorities(),
+                ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId()
+        );
+        SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+        // ✅ Redirect based on role
         String role = customPrincipal.getUser().getRole().name();
         String redirectUrl = switch (role) {
             case "STUDENT" -> "http://localhost:3000/student";
@@ -82,6 +84,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.sendRedirect(redirectUrl);
     }
 }
+
 
 
 

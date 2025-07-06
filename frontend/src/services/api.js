@@ -1,13 +1,11 @@
-// src/api.js
+// src/services/api.js (or src/api.js)
 import axios from 'axios';
 
 const api = axios.create({
   baseURL: 'http://localhost:8080/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true, // ✅ important for session cookie
+  withCredentials: true // ✅ needed for Spring session cookies
 });
+
 
 export default api;
 

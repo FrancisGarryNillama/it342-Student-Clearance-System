@@ -35,12 +35,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/registrar/**").hasAuthority("REGISTRAR")
                         .anyRequest().authenticated()
                 )
+
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 )
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                // .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .csrf(csrf -> csrf.disable()) // ⛔ CSRF token is often the root of POST 403 with cookies
+
                 .build();
     }
 
