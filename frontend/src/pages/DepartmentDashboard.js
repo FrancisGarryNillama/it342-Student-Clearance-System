@@ -6,9 +6,11 @@ function DepartmentDashboard() {
   const [user, setUser] = useState(null);
   const [pending, setPending] = useState([]);
   const [processed, setProcessed] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
-    // Fetch current user info
     axios.get('/user', { withCredentials: true })
       .then(res => {
         if (res.data.role !== 'DEPT_HEAD') {
@@ -23,16 +25,30 @@ function DepartmentDashboard() {
       })
       .catch(() => window.location.href = '/');
 
-    // Fetch pending clearance tasks
-    axios.get('/dept/clearance-tasks?status=PENDING', { withCredentials: true })
-      .then(res => setPending(res.data))
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = () => {
+    axios.get('/dept/tasks/pending', { withCredentials: true })
+      .then(res => setPending(res.data || []))
       .catch(() => setPending([]));
 
-    // Fetch processed clearance tasks
-    axios.get('/dept/clearance-tasks?status=PROCESSED', { withCredentials: true })
-      .then(res => setProcessed(res.data))
+    axios.get('/dept/tasks/processed', { withCredentials: true })
+      .then(res => setProcessed(res.data || []))
       .catch(() => setProcessed([]));
-  }, []);
+  };
+
+  const handleAction = async (taskId, actionStatus, optionalComment = '') => {
+    try {
+      await axios.put(`/dept/clearance-tasks/${taskId}?status=${actionStatus}&comment=${optionalComment}`, {}, { withCredentials: true });
+      fetchTasks(); // Refresh
+      setShowModal(false);
+      setComment('');
+      setSelectedTask(null);
+    } catch (err) {
+      alert('Failed to update task: ' + (err.response?.data || err.message));
+    }
+  };
 
   if (!user) return <p>Loading...</p>;
 
@@ -88,9 +104,12 @@ function DepartmentDashboard() {
                 <td>{new Date(task.updatedAt).toLocaleDateString()}</td>
                 <td><span className="badge pending">{task.status}</span></td>
                 <td className="actions">
-                  <button className="btn approve">Approve</button>
-                  <button className="btn reject">Reject</button>
-                  <button className="btn comment">Comment</button>
+                  <button className="btn approve" onClick={() => handleAction(task.taskId, 'APPROVED')}>Approve</button>
+                  <button className="btn reject" onClick={() => handleAction(task.taskId, 'REJECTED')}>Reject</button>
+                  <button className="btn comment" onClick={() => {
+                    setSelectedTask(task);
+                    setShowModal(true);
+                  }}>Comment</button>
                 </td>
               </tr>
             ))
@@ -117,7 +136,7 @@ function DepartmentDashboard() {
               <tr key={index}>
                 <td>{task.user?.fullName}</td>
                 <td><span className={`badge ${task.status.toLowerCase()}`}>{task.status}</span></td>
-                <td>{task.comment}</td>
+                <td>{task.comment || '—'}</td>
                 <td>{new Date(task.updatedAt).toLocaleDateString()}</td>
                 <td><span className="badge completed">Completed</span></td>
               </tr>
@@ -125,10 +144,28 @@ function DepartmentDashboard() {
           )}
         </tbody>
       </table>
+
+      {/* Comment Modal */}
+      {showModal && selectedTask && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Comment on Task</h3>
+            <p>Student: {selectedTask.user?.fullName}</p>
+            <textarea
+              className="input-card"
+              placeholder="Write your comment here..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+            <div className="button-row">
+              <button className="submit-btn" onClick={() => handleAction(selectedTask.taskId, 'COMMENTED', comment)}>Submit</button>
+              <button className="cancel-btn" onClick={() => setShowModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default DepartmentDashboard;
-
-
