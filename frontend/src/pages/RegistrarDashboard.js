@@ -112,7 +112,7 @@ function RegistrarDashboard() {
             <th>Student Name</th>
             <th>Email</th>
             <th>Status</th>
-            <th>Comment</th>
+            <th>Type</th> {/* ✅ Changed from Comment to Type */}
             <th>File</th>
             <th>Action</th>
           </tr>
@@ -130,7 +130,7 @@ function RegistrarDashboard() {
                     {req.status}
                   </span>
                 </td>
-                <td>{req.comment || '—'}</td>
+                <td>{req.type || '—'}</td> {/* ✅ Show type instead of comment */}
                 <td>
                   {req.fileUrl
                     ? <a href={`http://localhost:8080${req.fileUrl}`} target="_blank" rel="noreferrer">👁 View</a>
