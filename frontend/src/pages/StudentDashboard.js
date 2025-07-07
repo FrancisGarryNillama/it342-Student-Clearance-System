@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './StudentDashboard.css';
-import axios from '../services/api'; // baseURL = "/api"
+import axios from '../services/api';
 
 function StudentDashboard() {
   const [student, setStudent] = useState(null);
@@ -8,6 +8,7 @@ function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [requestType, setRequestType] = useState('');
   const [file, setFile] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     axios.get('/user')
@@ -27,18 +28,14 @@ function StudentDashboard() {
       .catch(() => window.location.href = '/');
 
     axios.get('/student/clearance-tasks')
-      .then(res => {
-        setClearance(res.data || []);
-      })
+      .then(res => setClearance(res.data || []))
       .catch(err => {
         console.error('Failed to load clearance tasks:', err);
         setClearance([]);
       });
 
     axios.get('/notifications')
-      .then(res => {
-        setNotifications(res.data || []);
-      })
+      .then(res => setNotifications(res.data || []))
       .catch(() => setNotifications([]));
   }, []);
 
@@ -53,30 +50,22 @@ function StudentDashboard() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post('/student/clearance-request', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
+      await axios.post('/student/clearance-request', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true
       });
 
       alert("Clearance request submitted!");
-
       const updated = await axios.get('/student/clearance-tasks');
       setClearance(updated.data || []);
-
       setRequestType('');
       setFile(null);
     } catch (error) {
-      console.error("Submission failed:", error);
-      if (error.response) {
-        console.error("Backend error:", error.response.data);
-        alert("Error: " + JSON.stringify(error.response.data));
-      } else {
-        alert("Network error: " + error.message);
-      }
+      alert("Error: " + (error.response?.data || error.message));
     }
   };
+
+  const closeModal = () => setSelectedTask(null);
 
   if (!student) return <p>Loading...</p>;
 
@@ -124,7 +113,7 @@ function StudentDashboard() {
           <tr>
             <th>Department</th>
             <th>Status</th>
-            <th>Comments</th>
+            <th>Type</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -137,8 +126,13 @@ function StudentDashboard() {
             <tr key={i}>
               <td>{row.department?.name || 'N/A'}</td>
               <td><span className={`badge ${row.status.toLowerCase()}`}>{row.status}</span></td>
-              <td>{row.comment}</td>
-              <td><a href="#">View</a></td>
+              <td>{row.type || '—'}</td>
+              <td>
+                <a href="#" onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedTask(row);
+                }}>View</a>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -147,11 +141,7 @@ function StudentDashboard() {
       <h2>Submit Clearance Request</h2>
       <div className="submit-form">
         <label>Select Type:</label>
-        <select
-          className="input-card"
-          value={requestType}
-          onChange={(e) => setRequestType(e.target.value)}
-        >
+        <select className="input-card" value={requestType} onChange={(e) => setRequestType(e.target.value)}>
           <option value="">-- Choose Type --</option>
           <option value="graduation">Graduation Clearance</option>
           <option value="exit">Exit Clearance</option>
@@ -169,11 +159,26 @@ function StudentDashboard() {
           <button className="submit-btn" onClick={handleSubmit}>Submit 📤</button>
         </div>
       </div>
+
+      {/* Modal */}
+      {selectedTask && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Clearance Task Details</h3>
+            <p><strong>Department:</strong> {selectedTask.department?.name}</p>
+            <p><strong>Status:</strong> {selectedTask.status}</p>
+            <p><strong>Type:</strong> {selectedTask.type || '—'}</p>
+            <p><strong>Comment:</strong> {selectedTask.comment || 'None'}</p>
+            <p><strong>File:</strong> {selectedTask.fileUrl
+              ? <a href={`http://localhost:8080${selectedTask.fileUrl}`} target="_blank" rel="noreferrer">View File</a>
+              : 'No File Uploaded'}
+            </p>
+            <button className="submit-btn" onClick={closeModal}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default StudentDashboard;
-
-
-

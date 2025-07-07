@@ -59,21 +59,19 @@ public class StudentController {
             task.setUser(currentUser);
             task.setDepartment(department);
             task.setStatus(TaskStatus.PENDING);
-            task.setComment("Submitted: " + type);
+            task.setType(type); // ✅ fix
+            task.setComment(""); // ✅ no "Submitted: graduation"
             task.setUpdatedAt(LocalDateTime.now());
             task.setUpdatedBy(currentUser);
 
             // 📁 Define upload path
             String filename = "student" + currentUser.getUserId() + "_" + type.toLowerCase() + "_" + System.currentTimeMillis() + ".pdf";
-            // ✅ Save to the actual project directory
             Path uploadPath = Paths.get(System.getProperty("user.dir"), "uploads", filename);
-
             Files.createDirectories(uploadPath.getParent());
 
             file.transferTo(uploadPath.toFile());
 
             task.setFileUrl("/uploads/" + filename);
-
 
             clearanceTaskRepository.save(task);
 
@@ -81,8 +79,8 @@ public class StudentController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to submit: " + e.getMessage());
         }
-
     }
+
 
 }
 

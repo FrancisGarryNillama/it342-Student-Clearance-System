@@ -23,9 +23,11 @@ public class ClearanceTask {
     private Department department;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus status; // PENDING, APPROVED, REJECTED
+    private TaskStatus status;
 
     private String comment;
+
+    private String type; // ✅ ADD THIS LINE
 
     @ManyToOne
     @JoinColumn(name = "updated_by")
@@ -35,3 +37,4 @@ public class ClearanceTask {
 
     private String fileUrl;
 }
+

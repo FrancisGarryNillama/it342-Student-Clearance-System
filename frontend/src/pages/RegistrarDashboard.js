@@ -5,6 +5,7 @@ import axios from '../services/api';
 function RegistrarDashboard() {
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [logs, setLogs] = useState([]);
 
   useEffect(() => {
     axios.get('/user', { withCredentials: true })
@@ -14,6 +15,7 @@ function RegistrarDashboard() {
       .catch(() => setUser({ name: 'Unknown', role: 'REGISTRAR' }));
 
     fetchRequests();
+    fetchLogs();
   }, []);
 
   const fetchRequests = () => {
@@ -22,48 +24,55 @@ function RegistrarDashboard() {
       .catch(() => setRequests([]));
   };
 
+  const fetchLogs = () => {
+    axios.get('/registrar/audit-logs', { withCredentials: true })
+      .then(res => setLogs(res.data || []))
+      .catch(() => setLogs([]));
+  };
+
   const handleApprove = async (id) => {
     try {
       await axios.patch(`/registrar/request/${id}/approve`, {}, { withCredentials: true });
       fetchRequests();
+      fetchLogs();
     } catch (err) {
       alert("Failed to approve: " + (err.response?.data || err.message));
     }
   };
 
-    const handleReject = async (id) => {
-      const reason = prompt("Enter rejection comment:");
-      if (!reason) return;
+  const handleReject = async (id) => {
+    const reason = prompt("Enter rejection comment:");
+    if (!reason) return;
 
-      try {
-        await axios.patch(`/registrar/request/${id}/reject`, reason, {
-          headers: { 'Content-Type': 'text/plain' },
-          withCredentials: true
-        });
-        fetchRequests();
-      } catch (err) {
-        alert("Failed to reject: " + (err.response?.data || err.message));
-      }
-    };
+    try {
+      await axios.patch(`/registrar/request/${id}/reject`, reason, {
+        headers: { 'Content-Type': 'text/plain' },
+        withCredentials: true
+      });
+      fetchRequests();
+      fetchLogs();
+    } catch (err) {
+      alert("Failed to reject: " + (err.response?.data || err.message));
+    }
+  };
 
-    const handleReport = async () => {
-      try {
-        const res = await axios.get('/registrar/report', {
-          responseType: 'blob',
-          withCredentials: true
-        });
+  const handleReport = async () => {
+    try {
+      const res = await axios.get('/registrar/report', {
+        responseType: 'blob',
+        withCredentials: true
+      });
 
-        const blob = new Blob([res.data], { type: 'application/pdf' });
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(blob);
-        link.download = 'clearance-report.pdf';
-        link.click();
-      } catch (err) {
-        alert("Failed to generate report.");
-        console.error(err);
-      }
-    };
-
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.download = 'clearance-report.pdf';
+      link.click();
+    } catch (err) {
+      alert("Failed to generate report.");
+      console.error(err);
+    }
+  };
 
   if (!user) return <p>Loading...</p>;
 
@@ -143,33 +152,48 @@ function RegistrarDashboard() {
         </tbody>
       </table>
 
+      <h2>Audit Logs</h2>
+      <table className="dashboard-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.length === 0 ? (
+            <tr><td colSpan="4">No logs found.</td></tr>
+          ) : (
+            logs.map((log, i) => (
+              <tr key={i}>
+                <td>{log.user?.fullName || '—'}</td>
+                <td>{log.action}</td>
+                <td>{log.target}</td>
+                <td>{new Date(log.timestamp).toLocaleString()}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+
       <div className="triple-box">
-        <div className="box">
-          <h3>Audit Logs</h3>
-          <p>Coming soon: view logs of all actions taken.</p>
-        </div>
         <div className="box">
           <h3>Generate Reports</h3>
           <button className="submit-btn" onClick={handleReport}>
             Download Report <span>📄</span>
           </button>
         </div>
-      </div>
-
-      <div className="box wide">
-        <h3>API Documentation</h3>
-        <button className="submit-btn" onClick={() => window.open('http://localhost:8080/swagger-ui.html', '_blank')}>
-          Open Docs <span>📘</span>
-        </button>
+        <div className="box">
+          <h3>API Documentation</h3>
+          <button className="submit-btn" onClick={() => window.open('http://localhost:8080/swagger-ui.html', '_blank')}>
+            Open Docs <span>📘</span>
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
 export default RegistrarDashboard;
-
-
-
-
-
-
