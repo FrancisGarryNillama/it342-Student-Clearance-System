@@ -4,6 +4,8 @@ import edu.cit.studentclearancesystem.entity.*;
 import edu.cit.studentclearancesystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import edu.cit.studentclearancesystem.entity.ClearanceTask;
+import edu.cit.studentclearancesystem.entity.TaskStatus;
 
 import java.time.LocalDateTime;
 
@@ -68,5 +70,12 @@ public class ClearanceTaskService {
                 .build();
 
         auditLogRepository.save(log);
+    }
+    public long countTasksByStatus(TaskStatus status) {
+        return taskRepository.countByStatus(status);
+    }
+
+    public long countTasksByStatusToday(TaskStatus status) {
+        return taskRepository.countByStatusAndUpdatedAtAfter(status, LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0));
     }
 }
