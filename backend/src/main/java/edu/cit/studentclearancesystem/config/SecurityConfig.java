@@ -27,9 +27,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(withDefaults()) //
+                .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login/**", "/error").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/student/**").hasAuthority("STUDENT")
                         .requestMatchers("/api/dept/**").hasAuthority("DEPT_HEAD")
                         .requestMatchers("/api/registrar/**").hasAuthority("REGISTRAR")
@@ -41,17 +42,15 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 )
-                // .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .csrf(csrf -> csrf.disable())
-
                 .build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // ✅ frontend origin
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // ✅ add PATCH
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // frontend origin
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
@@ -60,4 +59,3 @@ public class SecurityConfig {
         return source;
     }
 }
-
