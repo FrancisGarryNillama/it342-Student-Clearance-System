@@ -79,20 +79,23 @@ function StudentDashboard() {
   return (
     <div className="student-dashboard">
       <header className="dashboard-header">
-        <input type="text" className="search-bar" placeholder="Search" />
-        <div className="profile-section">
-          <span className="notif-icon">🔔</span>
-          <div className="profile">
-            <img src="/images/profile.png" alt="Profile" />
-            <div>
-              <strong>{student.name}</strong>
-              <p>{student.role}</p>
+            <input type="text" className="search-bar" placeholder="Search..." />
+            <div className="profile-section">
+              <span className="notif-icon">🔔</span>
+              <div className="profile">
+                <img
+                    src={student.profileImageUrl || "/images/default-profile.jpg"}
+                    alt="Profile"
+                />
+                <div>
+                  <strong>{student.name}</strong>
+                  <p>{student.role}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      <h1>Student Dashboard</h1>
+          <h1 className="dashboard-title">Student Dashboard</h1>
 
       <div className="card-row">
         <div className="info-card">
