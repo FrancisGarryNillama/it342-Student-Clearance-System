@@ -243,6 +243,16 @@ h1, h2 {
   border: 2px solid white;
 }
 
+.notifications-container {
+  max-height: 7em;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.notifications-container::-webkit-scrollbar {
+  display: none;
+}
 
 
 

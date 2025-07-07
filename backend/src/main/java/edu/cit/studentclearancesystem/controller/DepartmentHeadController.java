@@ -24,7 +24,7 @@ public class DepartmentHeadController {
     private final NotificationRepository notificationRepository;
     private final DepartmentRepository departmentRepository;
 
-    // ✅ Find department by head user
+
     private Department getDepartmentForHead(User deptHead) {
         return departmentRepository.findByHead(deptHead)
                 .orElseThrow(() -> new RuntimeException("Department not found for this department head."));

@@ -23,8 +23,8 @@ function DepartmentDashboard() {
       .catch(() => window.location.href = '/');
 
     axios.get('/dept/tasks/pending', { withCredentials: true })
-      .then(res => setPending(res.data))
-      .catch(() => setPending([]));
+        .then(res => setPending(res.data))
+        .catch(() => setPending([]));
 
     axios.get('/dept/tasks/processed', { withCredentials: true })
       .then(res => setProcessed(res.data))

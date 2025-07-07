@@ -112,18 +112,21 @@ function StudentDashboard() {
           {notifications.length === 0 ? (
             <p className="subtle">No new notifications</p>
           ) : (
-            <ul className="notif-list">
-              {notifications.map((note, i) => (
-                <li key={i} className="notif-item">
-                  <span>{note.message}</span><br />
-                  <small className="timestamp">
-                    {new Date(note.createdAt).toLocaleString()}
-                  </small>
-                </li>
-              ))}
-            </ul>
+            <div className="notifications-container">
+              <ul className="notif-list">
+                {notifications.map((note, i) => (
+                  <li key={i} className="notif-item">
+                    <span>{note.message}</span><br />
+                    <small className="timestamp">
+                      {new Date(note.createdAt).toLocaleString()}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
+
       </div>
 
       <h2>Clearance Progress Table</h2>
