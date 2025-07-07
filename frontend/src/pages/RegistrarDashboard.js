@@ -6,6 +6,8 @@ function RegistrarDashboard() {
   const [user, setUser] = useState(null);
   const [requests, setRequests] = useState([]);
   const [logs, setLogs] = useState([]);
+  const [alerts, setAlerts] = useState({ pending: 0, todayApproved: 0, todayRejected: 0 });
+
 
   useEffect(() => {
     axios.get('/user', { withCredentials: true })
@@ -16,7 +18,17 @@ function RegistrarDashboard() {
 
     fetchRequests();
     fetchLogs();
+    axios.get('/registrar/alerts', { withCredentials: true })
+      .then(res => setAlerts(res.data))
+      .catch(() => setAlerts({ pending: 0, todayApproved: 0, todayRejected: 0 }));
+
   }, []);
+
+ const fetchAlerts = () => {
+   axios.get('/registrar/alerts', { withCredentials: true })
+     .then(res => setAlerts(res.data || []))
+     .catch(() => setAlerts([{ message: 'Unable to fetch alerts.' }]));
+ };
 
   const fetchRequests = () => {
     axios.get('/registrar/requests', { withCredentials: true })
@@ -97,15 +109,19 @@ function RegistrarDashboard() {
 
       <h1>Registrar Dashboard</h1>
 
-      <div className="card-row">
-        <div className="info-card">
-          <p><strong>Registrar Overview</strong></p>
-          <p className="subtle">Monitor all graduation clearances.</p>
-        </div>
-        <div className="info-card">
-          <p><strong>System Alerts</strong></p>
-          <p className="subtle">No new alerts</p>
-        </div>
+        <div className="card-row">
+          <div className="info-card">
+            <p><strong>Registrar Info</strong></p>
+            <p className="subtle">Name: {user.name} <br /> Role: {user.role}</p>
+          </div>
+          <div className="info-card">
+            <p><strong>System Alerts</strong></p>
+            <p className="notif">🕒 Pending Requests: {alerts.pending}</p>
+            <p className="notif">✅ Approved Today: {alerts.todayApproved}</p>
+            <p className="notif">❌ Rejected Today: {alerts.todayRejected}</p>
+          </div>
+
+
       </div>
 
       <h2>Pending Graduation Clearance Requests</h2>
@@ -115,7 +131,7 @@ function RegistrarDashboard() {
             <th>Student Name</th>
             <th>Email</th>
             <th>Status</th>
-            <th>Type</th> {/* ✅ Changed from Comment to Type */}
+            <th>Type</th> {}
             <th>File</th>
             <th>Action</th>
           </tr>

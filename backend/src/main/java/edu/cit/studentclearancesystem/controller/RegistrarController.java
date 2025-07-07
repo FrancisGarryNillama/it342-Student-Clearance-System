@@ -2,6 +2,7 @@ package edu.cit.studentclearancesystem.controller;
 
 import edu.cit.studentclearancesystem.entity.AuditLog;
 import edu.cit.studentclearancesystem.entity.ClearanceTask;
+import edu.cit.studentclearancesystem.entity.TaskStatus;
 import edu.cit.studentclearancesystem.repository.AuditLogRepository;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
 import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
@@ -16,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/registrar")
@@ -28,7 +30,18 @@ public class RegistrarController {
     private final AuditLogRepository auditLogRepository;
     private final ReportService reportService;
 
+    @GetMapping("/alerts")
+    public ResponseEntity<?> getSystemAlerts() {
+        long totalPending = taskService.countTasksByStatus(TaskStatus.PENDING);
+        long todayApproved = taskService.countTasksByStatusToday(TaskStatus.APPROVED);
+        long todayRejected = taskService.countTasksByStatusToday(TaskStatus.REJECTED);
 
+        return ResponseEntity.ok(Map.of(
+                "pending", totalPending,
+                "todayApproved", todayApproved,
+                "todayRejected", todayRejected
+        ));
+    }
     @GetMapping("/report")
     public void downloadReport(HttpServletResponse response) throws Exception {
         byte[] pdf = reportService.generatePdfReport();
