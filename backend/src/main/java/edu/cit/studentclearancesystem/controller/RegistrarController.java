@@ -1,85 +1,77 @@
 package edu.cit.studentclearancesystem.controller;
 
 import edu.cit.studentclearancesystem.entity.ClearanceTask;
-import edu.cit.studentclearancesystem.entity.TaskStatus;
+import edu.cit.studentclearancesystem.entity.User;
 import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
-import edu.cit.studentclearancesystem.security.CustomUserPrincipal;
+import edu.cit.studentclearancesystem.service.AuditLogService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import edu.cit.studentclearancesystem.entity.TaskStatus;
+import edu.cit.studentclearancesystem.service.ReportService;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+
 @RestController
 @RequestMapping("/api/registrar")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @PreAuthorize("hasAuthority('REGISTRAR')")
 @RequiredArgsConstructor
 public class RegistrarController {
 
     private final ClearanceTaskRepository clearanceTaskRepository;
+    private final AuditLogService auditLogService;
 
-    /**
-     * Returns all clearance requests (e.g., for audit or full view).
-     */
+    private final ReportService reportService;
+
+    @GetMapping("/report")
+    public ResponseEntity<byte[]> downloadReport() {
+        byte[] pdfBytes = reportService.generatePdfReport();
+
+        if (pdfBytes == null) {
+            return ResponseEntity.status(500).body(null); // error during PDF generation
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=clearance-report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+    }
+
     @GetMapping("/requests")
-    public List<ClearanceTask> getAllClearanceRequests() {
+    public List<ClearanceTask> getPendingRequests() {
         return clearanceTaskRepository.findAll();
     }
 
-    /**
-     * Returns only the pending clearance requests.
-     */
-    @GetMapping("/requests/pending")
-    public List<ClearanceTask> getPendingClearanceRequests() {
-        return clearanceTaskRepository.findByStatus(TaskStatus.PENDING);
-    }
-
-    /**
-     * Approve a specific clearance task.
-     */
     @PatchMapping("/request/{taskId}/approve")
-    public ResponseEntity<String> approveClearance(@PathVariable Long taskId,
-                                                   @AuthenticationPrincipal CustomUserPrincipal principal) {
-        ClearanceTask task = clearanceTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
+    public void approveClearance(@PathVariable Long taskId) {
+        ClearanceTask task = clearanceTaskRepository.findById(taskId).orElseThrow();
         task.setStatus(TaskStatus.APPROVED);
-        task.setUpdatedBy(principal.getUser());
-        task.setUpdatedAt(LocalDateTime.now());
-
         clearanceTaskRepository.save(task);
-        return ResponseEntity.ok("Approved task ID: " + taskId);
+
+        User user = task.getUser();
+        auditLogService.log(user, "APPROVED", "ClearanceTask ID " + taskId);
     }
 
-    /**
-     * Reject a specific clearance task (with comment as plain string).
-     */
     @PatchMapping("/request/{taskId}/reject")
-    public ResponseEntity<String> rejectClearance(@PathVariable Long taskId,
-                                                  @RequestBody String comment,
-                                                  @AuthenticationPrincipal CustomUserPrincipal principal) {
-        ClearanceTask task = clearanceTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
-
-        String cleanComment = comment.replace("\"", "").trim();
+    public void rejectClearance(@PathVariable Long taskId, @RequestBody String comment) {
+        ClearanceTask task = clearanceTaskRepository.findById(taskId).orElseThrow();
         task.setStatus(TaskStatus.REJECTED);
-        task.setComment(cleanComment.isEmpty() ? "Rejected by registrar." : cleanComment);
-        task.setUpdatedBy(principal.getUser());
-        task.setUpdatedAt(LocalDateTime.now());
-
+        task.setComment(comment);
         clearanceTaskRepository.save(task);
-        return ResponseEntity.ok("Rejected task ID: " + taskId);
+
+        User user = task.getUser();
+        auditLogService.log(user, "REJECTED", "ClearanceTask ID " + taskId);
+    }
+
+    @GetMapping("/audit-logs")
+    public List<edu.cit.studentclearancesystem.entity.AuditLog> getAuditLogs() {
+        return auditLogService.getRecentLogs();
     }
 }
-
-
-
-
-
-
-
-
