@@ -12,4 +12,5 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     long countByUserEmailAndSeenFalse(String email);
 
+
 }

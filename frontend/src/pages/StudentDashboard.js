@@ -11,6 +11,16 @@ function StudentDashboard() {
   const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
+    axios.get('/notifications')
+      .then(res => {
+        setNotifications(res.data || []);
+        return axios.put('/notifications/mark-all-seen');
+      })
+      .catch(err => {
+        console.error('Failed to fetch or mark notifications:', err);
+        setNotifications([]);
+      });
+
     axios.get('/user')
       .then(res => {
         if (res.data.role !== 'STUDENT') {
@@ -33,11 +43,8 @@ function StudentDashboard() {
         console.error('Failed to load clearance tasks:', err);
         setClearance([]);
       });
-
-    axios.get('/notifications')
-      .then(res => setNotifications(res.data || []))
-      .catch(() => setNotifications([]));
   }, []);
+
 
   const handleSubmit = async () => {
     if (!requestType || !file) {
@@ -99,11 +106,20 @@ function StudentDashboard() {
         </div>
         <div className="info-card">
           <p><strong>Notifications</strong></p>
-          {notifications.length === 0
-            ? <p className="subtle">No new notifications</p>
-            : notifications.map((note, i) => (
-              <p className="notif" key={i}>{note}</p>
-            ))}
+          {notifications.length === 0 ? (
+            <p className="subtle">No new notifications</p>
+          ) : (
+            <ul className="notif-list">
+              {notifications.map((note, i) => (
+                <li key={i} className="notif-item">
+                  <span>{note.message}</span><br />
+                  <small className="timestamp">
+                    {new Date(note.createdAt).toLocaleString()}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
