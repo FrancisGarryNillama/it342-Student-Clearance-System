@@ -83,7 +83,10 @@ function RegistrarDashboard() {
         <div className="profile-section">
           <span className="notif-icon">🔔</span>
           <div className="profile">
-            <img src="/images/profile.png" alt="Profile" />
+            <img
+                src={user.profileImageUrl || "/images/default-profile.jpg"}
+                alt="Profile"
+            />
             <div>
               <strong>{user.name}</strong>
               <p>{user.role}</p>
