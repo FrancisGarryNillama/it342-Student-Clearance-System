@@ -1,13 +1,9 @@
 package edu.cit.studentclearancesystem.service;
 
-import edu.cit.studentclearancesystem.entity.ClearanceTask;
-import edu.cit.studentclearancesystem.entity.Notification;
-import edu.cit.studentclearancesystem.entity.User;
-import edu.cit.studentclearancesystem.repository.ClearanceTaskRepository;
-import edu.cit.studentclearancesystem.repository.NotificationRepository;
+import edu.cit.studentclearancesystem.entity.*;
+import edu.cit.studentclearancesystem.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import edu.cit.studentclearancesystem.entity.TaskStatus;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +13,7 @@ public class ClearanceTaskService {
 
     private final ClearanceTaskRepository taskRepository;
     private final NotificationRepository notificationRepository;
+    private final AuditLogRepository auditLogRepository;
 
     public void approveTask(Long taskId, User approvedBy) {
         ClearanceTask task = taskRepository.findById(taskId)
@@ -30,6 +27,8 @@ public class ClearanceTaskService {
         sendNotification(task.getUser(),
                 "✅ Your clearance for " + task.getDepartment().getName()
                         + " has been approved by " + approvedBy.getFullName());
+
+        createAuditLog(approvedBy, "APPROVED", "ClearanceTask ID " + taskId);
     }
 
     public void rejectTask(Long taskId, User rejectedBy, String reason) {
@@ -45,6 +44,8 @@ public class ClearanceTaskService {
         sendNotification(task.getUser(),
                 "❌ Your clearance for " + task.getDepartment().getName()
                         + " has been rejected. Reason: " + reason);
+
+        createAuditLog(rejectedBy, "REJECTED", "ClearanceTask ID " + taskId);
     }
 
     private void sendNotification(User recipient, String message) {
@@ -56,5 +57,16 @@ public class ClearanceTaskService {
                 .build();
 
         notificationRepository.save(notification);
+    }
+
+    private void createAuditLog(User user, String action, String target) {
+        AuditLog log = AuditLog.builder()
+                .user(user)
+                .action(action)
+                .target(target)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        auditLogRepository.save(log);
     }
 }
